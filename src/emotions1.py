@@ -1,4 +1,5 @@
 import numpy as np
+import socket
 import matplotlib.pyplot as plt
 import argparse
 import cv2
@@ -13,6 +14,9 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 gpu = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(gpu[0], True)
+UDP_IP = "192.168.1.6"
+UDP_PORT = 8080
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
 # command line argument
 ap = argparse.ArgumentParser()
 ap.add_argument("--mode",help="train/display")
@@ -129,7 +133,11 @@ elif mode == "display":
             maxindex = int(np.argmax(prediction))
             cv2.putText(frame, emotion_dict[maxindex], (x+20, y-60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             print(emotion_dict)
+            MESSAGE = str(emotion_dict)
+            sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
             print(prediction)
+            MESSAGE = str(prediction)
+            sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
 
         cv2.imshow('Video', cv2.resize(frame,(1600,960),interpolation = cv2.INTER_CUBIC))
         if cv2.waitKey(1) & 0xFF == ord('q'):
